@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Records - AM Apparel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/admin.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="admin-title">Payment Records</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0 admin-breadcrumb">
+                            <li class="breadcrumb-item"><a href="account.html" class="text-decoration-none text-muted">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Payments</li>
+                        </ol>
+                    </nav>
+                </div>
+                <a href="account.html" class="admin-btn admin-btn-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div class="admin-card">
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Customer ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Contact</th>
+                            <th>Address</th>
+                            <th>Payment Method</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentRecords"></tbody>
+                </table>
+            </div>
+
+            <!-- Download Button -->
+            <a href="#" onclick="downloadPDF()" class="admin-btn admin-btn-secondary">
+                <i class="fas fa-download me-2"></i>Download PDF
+            </a>
+        </div>
+    </div>
+
+    <script>
+        async function fetchPayments() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = 'signin.html';
+                    return;
+                }
+
+                const response = await fetch("http://localhost:5000/all-payments", {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const payments = await response.json();
+                const paymentRecords = document.getElementById("paymentRecords");
+                paymentRecords.innerHTML = '';
+
+                if (payments.length === 0) {
+                    paymentRecords.innerHTML = `
+                        <tr>
+                            <td colspan="9" class="text-center">
+                                <div class="empty-state">
+                                    <i class="fas fa-file-invoice text-primary mb-3" style="font-size: 3rem;"></i>
+                                    <p class="h5 mb-2">No Payment Records Found</p>
+                                    <p class="text-muted">Payment records will appear here once transactions are made.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                payments.forEach(payment => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${payment.customerId || 'N/A'}</td>
+                        <td>${payment.name || 'N/A'}</td>
+                        <td>${payment.email || 'N/A'}</td>
+                        <td>${payment.contact || 'N/A'}</td>
+                        <td>${payment.address || 'N/A'}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-${payment.paymentMethod === 'COD' ? 'money-bill' : 'credit-card'} text-primary me-2"></i>
+                                ${payment.paymentMethod || 'N/A'}
+                            </div>
+                        </td>
+                        <td>
+                            <strong class="text-primary">₹${payment.amount || '0'}</strong>
+                        </td>
+                        <td>
+                            <small class="text-muted">${payment.date ? new Date(payment.date).toLocaleString() : 'N/A'}</small>
+                        </td>
+                    `;
+                    paymentRecords.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Error fetching payment records:", error);
+                const paymentRecords = document.getElementById("paymentRecords");
+                paymentRecords.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center">
+                            <div class="alert alert-danger mb-0">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                Error loading payment records. Please try again later.
+                                <br>
+                                <small>${error.message}</small>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        async function updatePaymentStatus(customerId, currentStatus) {
+            try {
+                const token = localStorage.getItem('token');
+                const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
+
+                const response = await fetch(`http://localhost:5000/payments/${customerId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update payment status');
+                }
+
+                const statusBadge = document.getElementById(`payment-status-${customerId}`);
+                statusBadge.textContent = newStatus;
+                statusBadge.className = `status-badge ${newStatus === 'completed' ? 'success' : 'warning'}`;
+
+                localStorage.setItem('statusUpdate', JSON.stringify({
+                    type: 'payment',
+                    id: customerId,
+                    status: newStatus
+                }));
+                setTimeout(() => localStorage.removeItem('statusUpdate'), 100);
+
+                await fetchPayments();
+            } catch (error) {
+                console.error('Error updating payment status:', error);
+                alert('Failed to update payment status. Please try again.');
+            }
+        }
+
+        // Updated PDF Download Function for full width and clarity
+        function downloadPDF() {
+            const element = document.querySelector('.admin-card');
+            const opt = {
+                margin: 0.5,
+                filename: 'payment-records.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 3, useCORS: true },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchPayments);
+    </script>
+</body>
+</html>

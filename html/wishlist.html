@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My Wishlist - AM Apparel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Navbar Styles */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 0;
+        }
+
+        .custom-shadow {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .wishlist-header {
+            background: linear-gradient(135deg, #8c7000 0%, #b39b4a 100%);
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 50px;
+            border-radius: 0 0 60px 60px;
+            box-shadow: 0 10px 30px rgba(140, 112, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wishlist-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+            pointer-events: none;
+        }
+
+        .wishlist-stats {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 15px 35px rgba(140, 112, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(140, 112, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .wishlist-stats:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(140, 112, 0, 0.15);
+        }
+
+        .wishlist-stats h4 {
+            color: #8c7000;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .wishlist-stats p {
+            color: #727249;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0;
+        }
+
+        .wishlist-item {
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 20px;
+            overflow: hidden;
+            background: white;
+            margin-bottom: 40px;
+            box-shadow: 0 15px 35px rgba(140, 112, 0, 0.1);
+            border: 1px solid rgba(140, 112, 0, 0.08);
+        }
+
+        .wishlist-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px rgba(140, 112, 0, 0.18);
+        }
+
+        .wishlist-img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .wishlist-item:hover .wishlist-img {
+            transform: scale(1.08);
+        }
+
+        .wishlist-content {
+            padding: 30px;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), white);
+        }
+
+        .wishlist-content h5 {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: #333;
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+        }
+
+        .size-selector {
+            margin-bottom: 20px;
+        }
+
+        .size-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .size-option {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #8c7000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .size-option:hover {
+            background: #8c7000;
+            color: white;
+        }
+
+        .size-option.selected {
+            background: #8c7000;
+            color: white;
+        }
+
+        .price-tag {
+            background: linear-gradient(135deg, #8c7000 0%, #b39b4a 100%);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            box-shadow: 0 5px 15px rgba(140, 112, 0, 0.2);
+        }
+
+        .btn-remove {
+            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            box-shadow: 0 8px 20px rgba(204, 0, 0, 0.2);
+        }
+
+        .btn-remove:hover {
+            background: linear-gradient(135deg, #cc0000 0%, #990000 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(204, 0, 0, 0.3);
+        }
+
+        .btn-cart {
+            background: linear-gradient(135deg, #8c7000 0%, #b39b4a 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            box-shadow: 0 8px 20px rgba(140, 112, 0, 0.2);
+        }
+
+        .btn-cart:hover {
+            background: linear-gradient(135deg, #b39b4a 0%, #8c7000 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(140, 112, 0, 0.3);
+        }
+
+        .category-badge {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, rgba(140, 112, 0, 0.95) 0%, rgba(179, 155, 74, 0.95) 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        .empty-wishlist {
+            text-align: center;
+            padding: 80px 30px;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 30px;
+            margin: 30px 0;
+            box-shadow: 0 20px 40px rgba(140, 112, 0, 0.08);
+            border: 1px solid rgba(140, 112, 0, 0.1);
+        }
+
+        .empty-wishlist i {
+            font-size: 5rem;
+            color: #8c7000;
+            margin-bottom: 30px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.98);
+            color: #333;
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(140, 112, 0, 0.1);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification i {
+            font-size: 1.4rem;
+        }
+
+        .notification.success {
+            border-left: 5px solid #28a745;
+        }
+
+        .notification.error {
+            border-left: 5px solid #ff4444;
+        }
+
+        .filter-buttons {
+            margin-bottom: 40px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: white;
+            border: 2px solid #8c7000;
+            color: #8c7000;
+            padding: 10px 25px;
+            border-radius: 30px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: linear-gradient(135deg, #8c7000 0%, #b39b4a 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(140, 112, 0, 0.2);
+        }
+
+        .cart-popup {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #28a745;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+            font-size: 16px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .cart-popup.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container shadow custom-shadow">
+            <nav class="navbar navbar-expand-sm">
+                <a class="navbar-brand" href="#">
+                    <img src="cmp-logo3-removebg-preview.png" alt="logo" style="width:90px;">
+                </a>
+            </nav>
+            
+            <h1 style="color: #8c7000; font-weight: 1000; font-size: 40px; font-family: 'Papyrus', cursive;" class="mb-4">
+                AM Apparel and Textile
+            </h1>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse pt-4 p-3" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" style="color: #727249" href="code.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" style="color: #727249" href="customize1.html">Customize</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" style="color: #727249" href="about.html">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" style="color: #727249" href="contact.html">Contact</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" style="color: #727249" href="profile.html">Profile</a>
+                    </li>
+                    <li class="nav-item px-2">
+                        <a class="nav-link" href="cart.html">
+                            <img src="cart3.png" alt="Cart" width="25" height="25">
+                        </a>
+                    </li>
+                    <li class="nav-item px-1">
+                        <form class="d-flex">
+                            <div class="dropdown">
+                                <button class="btn border-0 p-0" type="button" data-bs-toggle="dropdown">
+                                    <div id="userInitial" class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 20px; font-weight: bold; background: linear-gradient(135deg, #8c7000 0%, #b39b4a 100%); color: white;">
+                                    </div>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" style="color: #727249" href="profile.html">My Profile</a></li>
+                                    <li><a class="dropdown-item" style="color: #727249" href="#" id="userEmailDisplay"></a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" style="color: #727249" id="logout-btn">Logout</a></li>
+                                </ul>
+                            </div>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="wishlist-header">
+        <div class="container">
+            <h2 class="text-center mb-3">My Wishlist</h2>
+            <div class="wishlist-stats text-center">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h4 id="totalItems">0 Items</h4>
+                        <p>in your wishlist</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h4 id="totalValue">₹0</h4>
+                        <p>total value</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h4 id="mostCommon">-</h4>
+                        <p>favorite category</p>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-category="all">All Items</button>
+                <button class="filter-btn" data-category="traditional">Traditional</button>
+                <button class="filter-btn" data-category="formal">Formal</button>
+                <button class="filter-btn" data-category="casual">Casual</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="wishlistContainer" class="row">
+            <!-- Wishlist items will be loaded here -->
+        </div>
+    </div>
+
+    <div id="notification" class="notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="notificationText"></span>
+    </div>
+
+    <div id="cart-popup" class="cart-popup"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            const userEmail = localStorage.getItem('userEmail');
+            
+            if (!token || !userEmail) {
+                window.location.href = 'signin.html';
+                return;
+            }
+
+            // Set user initial and email in the dropdown
+            const initial = userEmail.charAt(0).toUpperCase();
+            document.getElementById('userInitial').textContent = initial;
+            document.getElementById('userEmailDisplay').textContent = userEmail;
+
+            // Handle logout
+            document.getElementById('logout-btn').addEventListener('click', function() {
+                localStorage.removeItem('token');
+                localStorage.removeItem('userEmail');
+                window.location.href = 'signin.html';
+            });
+
+            // Add filter button listeners
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    loadWishlist(btn.dataset.category);
+                });
+            });
+            
+            // Initial load
+            loadWishlist();
+        });
+
+        async function loadWishlist(category = 'all') {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'signin.html';
+                return;
+            }
+
+            try {
+                // Fetch user's wishlist from server
+                const response = await fetch('/wishlist', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    // Silently handle the error and show empty state
+                    const container = document.getElementById('wishlistContainer');
+                    container.innerHTML = `
+                        <div class="col-12">
+                            <div class="empty-wishlist">
+                                <i class="fas fa-heart-broken"></i>
+                                <h3>Your wishlist is empty</h3>
+                                <p>Add items to your wishlist while shopping to save them for later!</p>
+                                <a href="code.html" class="btn btn-cart">
+                                    <i class="fas fa-shopping-bag"></i>
+                                    Continue Shopping
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    // Reset stats
+                    document.getElementById('totalItems').textContent = '0 Items';
+                    document.getElementById('totalValue').textContent = '₹0';
+                    document.getElementById('mostCommon').textContent = '-';
+                    return;
+                }
+
+                const data = await response.json();
+                const wishlist = data.wishlist || [];
+                
+                // Update stats
+                updateWishlistStats(wishlist);
+                
+                // Filter items if category is specified
+                const filteredItems = category === 'all' ? 
+                    wishlist : 
+                    wishlist.filter(item => item.category === category);
+
+                const container = document.getElementById('wishlistContainer');
+                
+                if (filteredItems.length === 0) {
+                    container.innerHTML = `
+                        <div class="col-12">
+                            <div class="empty-wishlist">
+                                <i class="fas fa-heart-broken"></i>
+                                <h3>No items found</h3>
+                                <p>${category === 'all' ? 
+                                    'Add items to your wishlist while shopping to save them for later!' :
+                                    `No ${category} items in your wishlist yet.`}</p>
+                                <a href="code.html" class="btn btn-cart">
+                                    <i class="fas fa-shopping-bag"></i>
+                                    Continue Shopping
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = filteredItems.map(item => `
+                    <div class="col-md-4">
+                        <div class="wishlist-item">
+                            <span class="category-badge">${item.category}</span>
+                            <img src="${item.img}" alt="${item.name}" class="wishlist-img">
+                            <div class="wishlist-content">
+                                <h5>${item.name}</h5>
+                                <div class="price-tag">₹${item.price}</div>
+                                <div class="size-selector">
+                                    <label>Size:</label>
+                                    <div class="size-options">
+                                        <div class="size-option" data-size="S">S</div>
+                                        <div class="size-option" data-size="M">M</div>
+                                        <div class="size-option" data-size="L">L</div>
+                                        <div class="size-option" data-size="XL">XL</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between gap-2">
+                                    <button class="btn btn-cart flex-grow-1" onclick="addToCart(${item.id}, '${item.name}', ${item.price}, '${item.img}', this)">
+                                        <i class="fas fa-shopping-cart"></i>
+                                        Add to Cart
+                                    </button>
+                                    <button class="btn btn-remove" onclick="removeFromWishlist(${item.id}, '${item.name}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Add size selection functionality
+                document.querySelectorAll('.size-option').forEach(option => {
+                    option.addEventListener('click', function() {
+                        const parent = this.parentElement;
+                        parent.querySelectorAll('.size-option').forEach(opt => opt.classList.remove('selected'));
+                        this.classList.add('selected');
+                    });
+                });
+
+            } catch (error) {
+                console.error('Error loading wishlist:', error);
+                // Show empty state instead of error notification
+                const container = document.getElementById('wishlistContainer');
+                container.innerHTML = `
+                    <div class="col-12">
+                        <div class="empty-wishlist">
+                            <i class="fas fa-heart-broken"></i>
+                            <h3>Your wishlist is empty</h3>
+                            <p>Add items to your wishlist while shopping to save them for later!</p>
+                            <a href="code.html" class="btn btn-cart">
+                                <i class="fas fa-shopping-bag"></i>
+                                Continue Shopping
+                            </a>
+                        </div>
+                    </div>
+                `;
+                // Reset stats
+                document.getElementById('totalItems').textContent = '0 Items';
+                document.getElementById('totalValue').textContent = '₹0';
+                document.getElementById('mostCommon').textContent = '-';
+            }
+        }
+
+        function updateWishlistStats(wishlist) {
+            // Update total items
+            document.getElementById('totalItems').textContent = `${wishlist.length} Items`;
+            
+            // Update total value
+            const totalValue = wishlist.reduce((sum, item) => sum + item.price, 0);
+            document.getElementById('totalValue').textContent = `₹${totalValue}`;
+            
+            // Update most common category
+            const categories = wishlist.map(item => item.category);
+            const mostCommon = categories.length > 0 ? 
+                categories.sort((a,b) =>
+                    categories.filter(v => v === a).length - categories.filter(v => v === b).length
+                ).pop() :
+                '-';
+            document.getElementById('mostCommon').textContent = mostCommon.charAt(0).toUpperCase() + mostCommon.slice(1);
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            notification.className = `notification ${type}`;
+            notificationText.textContent = message;
+            
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Function to toggle wishlist
+        async function toggleWishlist(id, name, price, img) {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showNotification('Please sign in to add items to your wishlist', 'error');
+                setTimeout(() => {
+                    window.location.href = 'signin.html';
+                }, 2000);
+                return;
+            }
+
+            const wishlistBtn = document.querySelector(`.wishlist-btn[onclick*="${id}"]`);
+            const isWishlisted = wishlistBtn.classList.contains('active');
+
+            try {
+                if (isWishlisted) {
+                    // Remove from wishlist
+                    const response = await fetch('/wishlist/remove', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ id })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to remove from wishlist');
+                    }
+
+                    wishlistBtn.classList.remove('active');
+                    wishlistBtn.innerHTML = '<i class="far fa-heart"></i>';
+                    showNotification(`${name} removed from wishlist`, 'error');
+                } else {
+                    // Add to wishlist
+                    const response = await fetch('/wishlist/add', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ 
+                            id, 
+                            name, 
+                            price, 
+                            img, 
+                            category: 'traditional'
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to add to wishlist');
+                    }
+
+                    wishlistBtn.classList.add('active');
+                    wishlistBtn.innerHTML = '<i class="fas fa-heart"></i>';
+                    showNotification(`${name} added to wishlist`, 'success');
+                }
+
+                // Update wishlist count by fetching current wishlist
+                const wishlistResponse = await fetch('/wishlist', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (wishlistResponse.ok) {
+                    const data = await wishlistResponse.json();
+                    document.getElementById('wishlistCount').textContent = data.wishlist.length;
+                }
+
+            } catch (error) {
+                console.error('Error toggling wishlist:', error);
+                showNotification('Failed to update wishlist. Please try again.', 'error');
+            }
+        }
+
+        // Function to remove from wishlist
+        async function removeFromWishlist(id, name) {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showNotification('Please sign in to manage your wishlist', 'error');
+                setTimeout(() => {
+                    window.location.href = 'signin.html';
+                }, 2000);
+                return;
+            }
+
+            try {
+                const response = await fetch('/wishlist/remove', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ id })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to remove item from wishlist');
+                }
+
+                showNotification(`${name} removed from wishlist`, 'error');
+                
+                // Reload the current category
+                const activeCategory = document.querySelector('.filter-btn.active').dataset.category;
+                loadWishlist(activeCategory);
+            } catch (error) {
+                console.error('Error removing from wishlist:', error);
+                showNotification('Failed to remove item. Please try again.', 'error');
+            }
+        }
+
+        // Function to add to cart
+        async function addToCart(id, name, price, img, button) {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                showNotification('Please sign in to add items to cart', 'error');
+                setTimeout(() => {
+                    window.location.href = "signin.html";
+                }, 2000);
+                return;
+            }
+
+            // Get selected size
+            const sizeSelector = button.closest('.wishlist-item').querySelector('.size-options');
+            const selectedSize = sizeSelector.querySelector('.selected');
+            
+            if (!selectedSize) {
+                showNotification('Please select a size', 'error');
+                return;
+            }
+
+            const size = selectedSize.dataset.size;
+
+            try {
+                const response = await fetch('/cart/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ 
+                        id, 
+                        name, 
+                        price, 
+                        quantity: 1, 
+                        img,
+                        size 
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to add item to cart');
+                }
+
+                showNotification(`${name} (Size: ${size}) has been added to your cart!`, 'success');
+            } catch (error) {
+                console.error("Error adding to cart:", error);
+                showNotification('Failed to add item to cart. Please try again.', 'error');
+            }
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

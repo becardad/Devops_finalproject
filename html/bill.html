@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bill - AM Apparel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .bill-container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .bill-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .bill-details {
+            margin-bottom: 20px;
+        }
+        .table th {
+            background-color: #f8f9fa;
+        }
+        .total-section {
+            margin-top: 20px;
+            border-top: 2px solid #dee2e6;
+            padding-top: 20px;
+        }
+        .payment-info {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        @media print {
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bill-container">
+        <div class="bill-header">
+            <h2>AM Apparel</h2>
+            <p>Invoice</p>
+        </div>
+
+        <div class="bill-details">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Customer Details:</h5>
+                    <p id="customerName"></p>
+                    <p id="customerEmail"></p>
+                    <p id="customerContact"></p>
+                    <p id="customerAddress"></p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <h5>Order Details:</h5>
+                    <p id="orderId"></p>
+                    <p id="orderDate"></p>
+                    <p id="paymentMethod"></p>
+                    <p id="paymentId"></p>
+                </div>
+            </div>
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="itemsList">
+            </tbody>
+        </table>
+
+        <div class="total-section">
+            <div class="row">
+                <div class="col-md-6 offset-md-6">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td>Subtotal:</td>
+                            <td id="subtotal" class="text-end"></td>
+                        </tr>
+                        <tr>
+                            <td>GST (18%):</td>
+                            <td id="gst" class="text-end"></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total Amount:</strong></td>
+                            <td id="totalAmount" class="text-end"><strong></strong></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="payment-info">
+            <p class="mb-0">Payment Status: <span class="text-success">Successful</span></p>
+        </div>
+
+        <div class="text-center mt-4">
+            <button class="btn btn-primary no-print" onclick="window.print()">Print Bill</button>
+            <a href="code.html" class="btn btn-secondary no-print">Back to Home</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const paymentData = JSON.parse(localStorage.getItem('paymentData'));
+            
+            if (!paymentData) {
+                window.location.href = 'form.html';
+                return;
+            }
+
+            // Format currency function
+            function formatCurrency(amount) {
+                return new Intl.NumberFormat('en-IN', {
+                    style: 'currency',
+                    currency: 'INR',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }).format(amount);
+            }
+
+            // Fill customer details
+            document.getElementById('customerName').textContent = `Name: ${paymentData.name}`;
+            document.getElementById('customerEmail').textContent = `Email: ${paymentData.email}`;
+            document.getElementById('customerContact').textContent = `Contact: ${paymentData.contact}`;
+            document.getElementById('customerAddress').textContent = `Address: ${paymentData.address}`;
+
+            // Fill order details
+            document.getElementById('orderId').textContent = `Order ID: ${paymentData.orderId || paymentData.customerId}`;
+            document.getElementById('orderDate').textContent = `Date: ${new Date().toLocaleDateString()}`;
+            document.getElementById('paymentMethod').textContent = `Payment Method: ${paymentData.paymentMethod.charAt(0).toUpperCase() + paymentData.paymentMethod.slice(1)}`;
+            if (paymentData.paymentId) {
+                document.getElementById('paymentId').textContent = `Payment ID: ${paymentData.paymentId}`;
+            }
+
+            // Fill items list
+            const itemsList = document.getElementById('itemsList');
+            let subtotal = 0;
+
+            // Get cart items from paymentData
+            const cartItems = paymentData.cartItems || [];
+            
+            cartItems.forEach(item => {
+                const row = document.createElement('tr');
+                // Use the correct property names based on the data structure
+                const itemPrice = parseFloat(item.Product_price || item.price);
+                const itemQuantity = parseInt(item.Quantity || item.quantity);
+                const itemTotal = itemPrice * itemQuantity;
+                subtotal += itemTotal;
+                
+                row.innerHTML = `
+                    <td>${item.Product_Name || item.name}</td>
+                    <td>${itemQuantity}</td>
+                    <td>${formatCurrency(itemPrice)}</td>
+                    <td>${formatCurrency(itemTotal)}</td>
+                `;
+                itemsList.appendChild(row);
+            });
+
+            // Calculate and fill totals
+            const gstAmount = subtotal * 0.18;
+            const totalAmount = subtotal + gstAmount;
+
+            document.getElementById('subtotal').textContent = formatCurrency(subtotal);
+            document.getElementById('gst').textContent = formatCurrency(gstAmount);
+            document.getElementById('totalAmount').textContent = formatCurrency(totalAmount);
+
+            // Store order in localStorage for history
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            orders.push({
+                orderId: paymentData.orderId || paymentData.customerId,
+                date: new Date().toISOString(),
+                amount: totalAmount,
+                paymentMethod: paymentData.paymentMethod,
+                items: cartItems
+            });
+            localStorage.setItem('orders', JSON.stringify(orders));
+
+            // Clear the cart after generating the bill
+            localStorage.removeItem('cart');
+        });
+    </script>
+</body>
+</html> 
